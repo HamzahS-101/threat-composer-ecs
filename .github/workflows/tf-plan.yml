@@ -47,16 +47,16 @@ jobs:
       - name: Checkov Scan
         uses: bridgecrewio/checkov-action@v12
         with:
-          directory: .
+          directory: terraform
           soft_fail: true
           
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=./terraform/tfplan
 
       - name: Upload Terraform Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: tfplan
+          path: .terraform/tfplan
 
