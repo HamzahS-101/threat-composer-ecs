@@ -4,7 +4,7 @@ This project deploys the Threat Composer application using Amazon Elastic Contai
 
 ## 1. Project Overview
 
-(Add further details on what the project is about)
+(Add further details on what the project is about e.g. overview of requirements and details on the app being deployed)
 
 
 ## 2. Dockerfile Optimisation
