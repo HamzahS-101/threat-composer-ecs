@@ -58,7 +58,3 @@ jobs:
           name: tfplan
           path: ./tfplan
 
-      - name: Terraform Plan Summary
-        uses: dorny/terraform-plan-summary@v1
-        with:
-          plan_file: tfplan
