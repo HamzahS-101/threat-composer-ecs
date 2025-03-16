@@ -1,0 +1,65 @@
+name: Terraform Plan and Checks
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+
+defaults:
+  run:
+    working-directory: ./terraform/
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download terraform.tfvars from S3
+        run: aws s3 cp s3://threat-composer-project/terraform.tfvars ./
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format and Validate
+        run: |
+          terraform fmt -check
+          terraform validate
+
+      - name: Setup Tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: TFLint Scan
+        run: tflint -f compact
+
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          soft_fail: true
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Upload Terraform Plan Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: tfplan
+          path: ./tfplan
+
+      - name: Terraform Plan Summary
+        uses: dorny/terraform-plan-summary@v1
+        with:
+          plan_file: tfplan
