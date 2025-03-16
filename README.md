@@ -2,9 +2,8 @@
 
 This project deploys the Threat Composer application using Amazon Elastic Container Service (ECS) and Terraform, with automated CI/CD pipelines managed by GitHub Actions.
 
-## 1. Architectural Overview
+## 1. App Details
 
-**(Diagram to be added here, explaining the system architecture and component interactions.)**
 
 ## 2. Dockerfile Optimisation
 
