@@ -52,7 +52,7 @@ jobs:
           
 
       - name: Terraform Plan
-        run: terraform plan -out=./terraform/tfplan
+        run: terraform plan -out=tfplan
 
       - name: Upload Terraform Plan Artifact
         uses: actions/upload-artifact@v4
