@@ -6,7 +6,6 @@ on:
     paths:
       - 'Dockerfile'
       - 'app/**'
-    
 
 jobs:
   build-and-push-to-ECR:
@@ -26,25 +25,21 @@ jobs:
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build and tag Docker image
+    - name: Set Image Tag
+      run: echo "IMAGE_TAG=${{ secrets.ECR_REPOSITORY }}:latest" >> $GITHUB_ENV
+
+    - name: Build, tag, and push Docker image to ECR
       run: |
-        docker build -t ${{ secrets.ECR_REPOSITORY }}:latest -f Dockerfile ./app
-        echo "IMAGE_TAG=${{ secrets.ECR_REPOSITORY }}:latest" >> $GITHUB_ENV
-        echo "Docker image built and tagged: ${{ secrets.ECR_REPOSITORY }}:latest"
+        docker build -t ${{ env.IMAGE_TAG }} -f Dockerfile ./app
+        docker push ${{ env.IMAGE_TAG }}
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: '${{ secrets.ECR_REPOSITORY }}:latest'
+        image-ref: '${{ env.IMAGE_TAG }}'
         exit-code: '1'
         format: 'table'
         severity: 'CRITICAL,HIGH'
-
-    - name: Upload Trivy Docker Scan to Security
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy-docker-scan.sarif'
-        wait-for-processing: true
 
     - name: Push Docker image to ECR
       run: |
