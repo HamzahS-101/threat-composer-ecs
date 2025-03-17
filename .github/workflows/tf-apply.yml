@@ -43,7 +43,7 @@ jobs:
       - name: Check for tfplan artifact
         run: |
           if [ ! -f ./terraform/tfplan ]; then
-            echo "tfplan does not exist. Exiting."
+            echo "tfplan does not exist."
             exit 1
           fi
 
