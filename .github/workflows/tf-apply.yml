@@ -28,7 +28,7 @@ jobs:
       - name: Download terraform.tfvars from S3
         run: aws s3 cp s3://threat-composer-project/terraform.tfvars ./terraform/
 
-      - name: Check if tf-plan workflow was successful
+      - name: Download artifact from tf-plan workflow
         uses: dawidd6/action-download-artifact@v9
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
