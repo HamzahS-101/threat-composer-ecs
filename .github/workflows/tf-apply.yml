@@ -1,24 +1,14 @@
 name: Terraform Apply
 
 on:
-  pull_request:
+  workflow_run:
+    workflows: ["Terraform Plan and Checks"]
     types:
-      - closed
-    branches:
-      - main  
-  workflow_dispatch:
+      - completed
 
 jobs:
   terraform-apply:
-    if: |
-      github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'tf-plan') ||
-      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./terraform  
 
     steps:
       - name: Checkout code
@@ -32,29 +22,32 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Download terraform.tfvars from S3
-        run: aws s3 cp s3://threat-composer-project/terraform.tfvars ./
+        run: aws s3 cp s3://threat-composer-project/terraform.tfvars ./terraform/
 
       - name: Download Terraform Plan artifact
         uses: actions/download-artifact@v4
         with:
-          name: tfplan  
+          name: tfplan
           path: ./terraform/
+
+      - name: Check for tfplan artifact
+        run: |
+          if [ ! -f ./terraform/tfplan ]; then
+            echo "tfplan artifact does not exist at ./terraform/tfplan"
+            exit 1
+          fi
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
+        working-directory: ./terraform
         run: terraform init
 
-      - name: Check for tfplan artifact
-        run: |
-          if [ ! -f ./terraform/tfplan ]; then
-            echo "tfplan does not exist."
-            exit 1
-          fi
-
       - name: Terraform Apply
+        working-directory: ./terraform
         run: terraform apply -auto-approve ./terraform/tfplan
+
 
 
 
