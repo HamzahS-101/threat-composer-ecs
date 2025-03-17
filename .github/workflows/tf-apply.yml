@@ -5,7 +5,7 @@ on:
     types:
       - closed
     branches:
-      - main 
+      - main  
 
 jobs:
   terraform-apply:
@@ -28,6 +28,12 @@ jobs:
       - name: Download terraform.tfvars from S3
         run: aws s3 cp s3://threat-composer-project/terraform.tfvars ./
 
+      - name: Download Terraform Plan artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: tfplan
+          path: ./terraform/
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -43,4 +49,5 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve ./terraform/tfplan
+
 
