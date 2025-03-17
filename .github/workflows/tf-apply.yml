@@ -4,13 +4,15 @@ on:
   pull_request:
     types:
       - closed
+  workflow_dispatch:
 
 jobs:
   terraform-apply:
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'tf-plan')
+      contains(github.event.pull_request.labels.*.name, 'tf-plan') ||
+      github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
@@ -32,7 +34,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: 'tf-plan.yml'
           workflow_conclusion: 'success'
-          name: tfplan
+          name: tfpla
           path: ./terraform/
 
       - name: Check for tfplan artifact
