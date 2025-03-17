@@ -34,7 +34,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: 'tf-plan.yml'
           workflow_conclusion: 'success'
-          name: tfpla
+          name: tfplan
           path: ./terraform/
 
       - name: Check for tfplan artifact
@@ -53,7 +53,7 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ./terraform
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfpla
 
 
 
