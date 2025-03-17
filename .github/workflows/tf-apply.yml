@@ -12,7 +12,8 @@ jobs:
   terraform-apply:
     if: |
       github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'tf-plan')
+      contains(github.event.pull_request.labels.*.name, 'tf-plan') ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
