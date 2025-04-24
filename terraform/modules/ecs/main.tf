@@ -2,7 +2,7 @@ resource "aws_ecs_cluster" "cluster" {
   name = var.cluster_name
 
   setting {
-    name = "containerInsights"
+    name  = "containerInsights"
     value = "enabled"
   }
 }
@@ -54,12 +54,12 @@ resource "aws_iam_role_policy_attachment" "task_execution_attachment" {
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
-  family             = var.task_definition_family
+  family                   = var.task_definition_family
   requires_compatibilities = ["FARGATE"]
-  network_mode       = "awsvpc"
-  cpu                = var.task_cpu
-  memory             = var.task_memory
-  execution_role_arn = aws_iam_role.task_execution_role.arn
+  network_mode             = "awsvpc"
+  cpu                      = var.task_cpu
+  memory                   = var.task_memory
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -85,12 +85,12 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_ecs_service" "service" {
-  name            = var.service_name
-  launch_type     = "FARGATE"
+  name             = var.service_name
+  launch_type      = "FARGATE"
   platform_version = "LATEST"
-  cluster         = aws_ecs_cluster.cluster.id
-  task_definition = aws_ecs_task_definition.task_definition.arn
-  desired_count   = var.desired_count
+  cluster          = aws_ecs_cluster.cluster.id
+  task_definition  = aws_ecs_task_definition.task_definition.arn
+  desired_count    = var.desired_count
 
   network_configuration {
     subnets         = var.private_subnet_ids

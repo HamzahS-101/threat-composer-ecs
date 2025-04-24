@@ -61,7 +61,7 @@ resource "aws_route_table_association" "public_rt_association" {
 }
 
 resource "aws_route_table" "private_rt" {
-  count = 2
+  count  = 2
   vpc_id = aws_vpc.vpc.id
   route {
     cidr_block     = "0.0.0.0/0"
