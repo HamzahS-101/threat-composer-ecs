@@ -2,62 +2,95 @@
 
 This project deploys the Threat Composer application using Amazon Elastic Container Service (ECS) and Terraform, with automated CI/CD pipelines managed by GitHub Actions.
 
-## 1. Project Overview
+## Table of Contents
 
-(Add further details on what the project is about e.g. overview of requirements and details on the app being deployed).
+1. [Project Breakdown](#1-project-breakdown)
+2. [App Demo](#2-app-demo)
+3. [Local Setup](#3-local-setup)  
+4. [Dockerfile Optimisation](#4-dockerfile-optimisation)  
+5. [Terraform Infrastructure](#5-terraform-infrastructure)  
+6. [CI/CD Pipelines with GitHub Actions](#6-cicd-pipelines-with-github-actions)  
 
+## 1. Project Breakdown
 
-## 2. Dockerfile Optimisation
+This project consists of the following key components:
 
-The `Dockerfile` used to build the Threat Composer application's container image has been optimised for size and efficiency. Key optimisations include:
+- A **Dockerised** application, built with an optimised multi-stage `Dockerfile`.
+- An **Amazon ECS Fargate** service running behind an **Application Load Balancer**.
+- A **modular Terraform** codebase managing the infrastructure, including **VPC**, **ECS**, **ALB**, and **Route 53** configurations.
+- Enabled **SSL** using an **AWS Certificate Manager (ACM)** certificate for secure **HTTPS** access via the Application Load Balancer.
+- **GitHub Actions** workflows for continuous integration and delivery.
+- Integrated security scanning and static analysis using **Trivy**, **TFLint**, and **Checkov**.
 
-* **Multi-stage builds:** Utilising multi-stage builds to reduce the final image size by only including necessary runtime dependencies.
-* **Base image selection:** Choosing a minimal base image suitable for the application's runtime environment (e.g., `node:alpine`).
-* **Minimising unnecessary files:** Ensuring that only required files are copied into the final image.
+## 2. App Demo
 
-## 3. Terraform Infrastructure
+Threat Composer is a visual tool for designing threat models and identifying potential security risks early in the development process. This demo shows the core interface and functionality in action.
 
-Terraform is used to provision and manage the entire AWS infrastructure for the Threat Composer application. Key aspects of the Terraform implementation include:
+![Threat Composer Demo](app/images/threat-composer.gif)
 
-* **Remote State:**
-    * Terraform state is stored remotely in an Amazon S3 bucket. This ensures state persistence and enables collaboration by preventing state conflicts.
-* **Modular Design:**
-    * The infrastructure is built using Terraform modules for each component, including:
-        * VPC (Virtual Private Cloud)
-        * ALB (Application Load Balancer)
-        * Route53 (DNS)
-        * ECS (Elastic Container Service)
-    * This modular approach promotes code reusability and maintainability.
-* **DRY Principle:**
-    * The "Don't Repeat Yourself" (DRY) principle is strictly adhered to. Common configurations and resources are abstracted into modules to avoid hardcoding.
-* **Variable Management:**
-    * All variable values, including sensitive information, are stored in a `terraform.tfvars` file. This separates configuration from code and protects sensitive data.
+The application used in this project is open-source and maintained by AWS Labs. You can find the source repository here:  
+[https://github.com/awslabs/threat-composer/tree/main](https://github.com/awslabs/threat-composer/tree/main)
 
+## 3. Local Setup
 
-## 4. CI/CD Pipelines with GitHub Actions
+To run the application locally:
 
-GitHub Actions automates the build, deployment, and management of the Threat Composer application. Secrets, such as AWS access keys, are securely stored as GitHub Secrets to protect sensitive information across all workflows. Three pipelines are implemented:
+```bash
+yarn install
+yarn build
+yarn global add serve
+serve -s build
+```
 
-* **Docker Image Build and Push:**
-    * This pipeline builds the Docker image from the `Dockerfile` and pushes it to Amazon ECR (Elastic Container Registry).
-    * It is triggered automatically on pushes when changes are detected in the `app` code directory or the `Dockerfile`.
-* **Terraform Apply:**
-    * This pipeline applies the Terraform code to provision or update the AWS infrastructure.
-    * This pipeline is triggered automatically on pushes when changes are detected in the `terraform` directory.
-* **Terraform Destroy:**
-    * This pipeline destroys the AWS infrastructure created by Terraform.
-    * It is triggered manually to prevent accidental deletion of resources.
+Then open your browser and visit:
+`http://localhost:3000`
 
-## 5. Security and Static Analysis
+## 4. Dockerfile Optimisation
 
-Security and static analysis tools are integrated into the CI/CD pipelines to enhance code quality and security:
+The [Dockerfile](./Dockerfile) used to build the Threat Composer application's container image has been optimised for size and efficiency. Key optimisations include:
 
-* **Trivy:**
-    * Trivy is used to scan the Docker image for vulnerabilities before it is pushed to ECR.
-    * This ensures that the deployed image is free from known security flaws.
-* **TFLint:**
-    * TFLint is used to lint the Terraform code, checking for best practices and potential errors.
-    * This helps ensure that the infrastructure code is well-formed and follows recommended guidelines.
-* **Checkov:**
-    * Checkov is used to perform static code analysis on the Terraform code, checking for security misconfigurations.
-    * This helps identify and prevent potential security vulnerabilities in the infrastructure.
+- **Multi-stage builds**: Reduces the final image size by including only necessary runtime dependencies.
+- **Base image selection**: Uses a minimal base image such as `node:alpine` for smaller, faster builds.
+- **Minimising unnecessary files**: Ensures only required files are copied into the final image.
+
+## 5. Terraform Infrastructure
+
+Terraform provisions and manages the complete AWS infrastructure. Key features include:
+
+- **Remote state**: Terraform state is stored in an S3 bucket for persistence and collaboration.
+- **Modular design**: Separate modules for VPC, ECS, ALB, and Route 53 improve reusability and clarity.
+- **DRY principle**: Common config is abstracted into modules to avoid repetition.
+- **Variable management**: Inputs and sensitive values are handled via `terraform.tfvars`.
+
+## 5. CI/CD Pipelines with GitHub Actions
+
+CI/CD is fully automated using GitHub Actions. The project includes four workflows to manage the container lifecycle and AWS infrastructure provisioning, with security and code quality checks integrated throughout:
+
+- [**Build and Push Docker Image to ECR**](.github/workflows/docker-image.yml)
+  Triggered on changes to the `Dockerfile` or the `app/` directory, or manually via the GitHub UI.  
+  This workflow:
+  - Builds the Docker image using the app’s `Dockerfile`
+  - Scans for vulnerabilities using **Trivy**
+  - Pushes the image to **Amazon ECR**, using credentials managed through GitHub Secrets
+
+- [**Terraform Plan and Checks**](.github/workflows/tf-plan.yml)  
+  Triggered on pull requests affecting the `terraform/` directory.  
+  This workflow:
+  - Downloads `terraform.tfvars` from **S3**
+  - Runs `terraform init`, `fmt`, and `validate`
+  - Lints the code with **TFLint** and performs static analysis using **Checkov**
+  - Generates a plan file (`tfplan`) and uploads it as an artefact for later use
+
+- [**Terraform Apply**](.github/workflows/tf-apply.yml)  
+  Triggered automatically when a pull request with a `tf-plan` label is merged, or manually via the GitHub UI.  
+  This workflow:
+  - Retrieves the uploaded `tfplan` and `terraform.tfvars` from S3
+  - Re-initialises Terraform and applies the plan using `terraform apply -auto-approve tfplan`
+
+- [**Terraform Destroy**](.github/workflows/tf-destroy.yml)  
+  Manually triggered when infrastructure needs to be torn down.  
+  This workflow:
+  - Pulls the latest `terraform.tfvars` from S3
+  - Runs validation and linting with **TFLint**
+  - Destroys all provisioned resources using `terraform destroy -auto-approve`
+
