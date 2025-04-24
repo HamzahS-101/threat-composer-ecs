@@ -9,40 +9,51 @@ variable "vpc_name" {
   description = "Name of the VPC."
 }
 
-variable "public_subnet_1_cidr" {
-  type        = string
-  description = "CIDR block for the first public subnet."
+variable "public_subnet_cidrs" {
+  type        = list(string)
+  description = "List of CIDR blocks for public subnets."
 }
 
-variable "public_subnet_2_cidr" {
-  type        = string
-  description = "CIDR block for the second public subnet."
+variable "private_subnet_cidrs" {
+  type        = list(string)
+  description = "List of CIDR blocks for private subnets."
 }
 
-variable "private_subnet_1_cidr" {
-  type        = string
-  description = "CIDR block for the first private subnet."
+variable "availability_zones" {
+  type        = list(string)
+  description = "List of availability zones to use."
 }
 
-variable "private_subnet_2_cidr" {
+variable "alb_sg_name" {
   type        = string
-  description = "CIDR block for the second private subnet."
+  description = "Name of the Application Load Balancer security group."
 }
 
-variable "availability_zone_a" {
+variable "alb_sg_description" {
   type        = string
-  description = "Availability zone for subnets 1 (a)."
+  description = "Description of the Application Load Balancer security group."
 }
 
-variable "availability_zone_b" {
+variable "container_sg_name" {
   type        = string
-  description = "Availability zone for subnets 2 (b)."
+  description = "Name of the ECS container security group."
+}
+
+variable "container_sg_description" {
+  type        = string
+  description = "Description of the ECS container security group."
+}
+
+variable "container_ingress_port" {
+  type        = number
+  description = "Port number for container ingress traffic."
 }
 
 variable "region" {
   type        = string
   description = "AWS region to deploy resources in."
 }
+
 
 # Security Groups
 
