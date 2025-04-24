@@ -1,8 +1,3 @@
-variable "domain_name" {
-  type        = string
-  description = "Domain name for the ACM certificate (e.g., app.example.com)."
-}
-
 variable "hosted_zone_domain" {
   type        = string
   description = "Domain name of the Route53 hosted zone (e.g., example.com)."
